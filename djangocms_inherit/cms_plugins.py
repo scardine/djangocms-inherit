@@ -1,4 +1,5 @@
 import copy
+import warnings
 
 from django.conf import settings
 from django.core.exceptions import FieldError
@@ -39,6 +40,13 @@ class InheritPagePlaceholderPlugin(CMSPluginBase):
         page = instance.placeholder.page
         from_page = instance.from_page
 
+        if page == from_page:
+            msg = 'Inherit Plugin should not inherit plugins from the same '
+                  'page it is placed (otherwise we enter an infinite loop).'
+            warnings.warn(msg)
+            context.update({'parent_output': msg})
+            return context
+            
         if page.publisher_is_draft:
             from_page = from_page.get_draft_object()
         else:
